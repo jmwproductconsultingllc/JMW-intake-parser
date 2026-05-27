@@ -1,0 +1,68 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2870
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 import \{ GoogleGenerativeAI \} from '@google/generative-ai';\
+\
+// Initialize Gemini with your secret key from the .env.local file\
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);\
+\
+export async function POST(request) \{\
+  try \{\
+    // 1. Receive the data from your frontend form\
+    const formData = await request.json(); \
+    \
+    // 2. Format the data into a clean prompt\
+    const prompt = `\
+      Evaluate this prospect:\
+      Liquid Capital: $\{formData.liquidCapital\}\
+      Net Worth: $\{formData.netWorth\}\
+      Role: $\{formData.role\}\
+      Timeline: $\{formData.timeline\}\
+      FDD Received: $\{formData.fdd\}\
+      Business Type: $\{formData.businessType\}\
+      Partners: $\{formData.partners\}\
+    `;\
+\
+    // 3. Define the JMW Consulting Agent's behavior\
+    const systemInstruction = `\
+      You are the lead franchise consultant at JMW Consulting. Your objective is to review raw intake data from prospective franchise buyers and generate a rapid "Viability & Scope Summary." \
+      \
+      Step 1: Evaluate Viability & Flag Risks\
+      Analyze the prospect's inputs. You must brutally assess the alignment between their Capital, Role, and Timeline. \
+      - Rule: If Role = "Semi-Absentee" or "Passive Investor" and Capital is under $100k, generate a RED FLAG indicating severe undercapitalization for management-run models.\
+      - Rule: If Timeline = "< 3 months" and FDD Received = "No", generate a YELLOW FLAG indicating an unrealistic timeline.\
+      \
+      Step 2: Define the Consulting Scope\
+      Based on their selections, output a recommended statement of work.\
+      - Rule: If Business Type = "Brick & Mortar", prioritize "Site Selection Analysis" and "Financial Viability" to model lease economics.\
+      - Rule: If Partners = "Yes", mandate the "Operational Assessment" to define the Workstream Model.\
+\
+      Output Format:\
+      1. Prospect Snapshot: (2-sentence summary of who they are and what they want).\
+      2. Risk Assessment: (Bullet points of Red/Yellow/Green flags based on the rules above).\
+      3. Recommended SOW (Statement of Work): (The specific JMW services they need, mapped to their goals).\
+    `;\
+\
+    // 4. Call the Gemini API\
+    const model = genAI.getGenerativeModel(\{ \
+        model: 'gemini-1.5-flash',\
+        systemInstruction: systemInstruction\
+    \});\
+\
+    const result = await model.generateContent(prompt);\
+    const responseText = result.response.text();\
+\
+    // 5. Send the AI's analysis back to the frontend\
+    return new Response(JSON.stringify(\{ analysis: responseText \}), \{\
+      headers: \{ 'Content-Type': 'application/json' \},\
+    \});\
+\
+  \} catch (error) \{\
+    console.error("API Error:", error);\
+    return new Response(JSON.stringify(\{ error: "Failed to process intake" \}), \{ status: 500 \});\
+  \}\
+\}}
