@@ -96,7 +96,7 @@ export default function IntakeParser() {
     }
   };
 
-  const activeTheme = styleMap[parsedData.theme || 'green'];
+  const activeTheme = (styleMap as any)[parsedData.theme || 'green'];
 
   return (
     <div 
