@@ -40,7 +40,7 @@ export default function IntakeParser() {
     setLoading(false);
   };
 
-  const parseResults = (text) => {
+  const parseResults = (text: any) => {
     if (!text || text.includes("Backend Error")) return { error: text };
 
     const snapshotMatch = text.match(/1\.\s*\*?.*Snapshot.*?\*?\s*:\s*([\s\S]*?)(?=2\.|$)/i);
