@@ -15,7 +15,7 @@ export default function IntakeParser() {
   const [analysis, setAnalysis] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
     
